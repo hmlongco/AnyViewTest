@@ -86,10 +86,16 @@ struct ContentView: View {
                     } label: { Text("Wrapped(AnyView) 100K") }
                 }
 
-                Section("List with Provider(Item) - O(1)") {
+                Section("List with Provider(Item) - O(N)") {
                     NavigationLink {
                         ProviderListView(items: model.items1K, provider: ItemProvider())
                     } label: { Text("ProviderListView AnyView(Item) 1K") }
+                }
+
+                Section("List with WrappedProvider(Item) - O(1)") {
+                    NavigationLink {
+                        WrappedProviderListView(items: model.items1K, provider: ItemProvider())
+                    } label: { Text("WrappedProviderListView 1K") }
                 }
 
                 Section("LazyVStack AnyView(Item) - O(1)") {

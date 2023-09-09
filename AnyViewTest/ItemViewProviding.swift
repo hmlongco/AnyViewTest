@@ -8,6 +8,7 @@ import SwiftUI
 
 protocol ItemViewProviding {
     func view(for item: Item) -> AnyView
+    func wrappedAnyView(for item: Item) -> WrappedAnyView
 }
 
 struct ProviderDemoView: View {
@@ -28,7 +29,24 @@ struct ProviderListView: View {
     var body: some View {
         let _ = print("List Evaluated")
         List(items) { item in
-            provider.view(for: item) // VStack { provider.view(for: item) }
+            provider.view(for: item)
+        }
+        .listStyle(.plain)
+        .navigationTitle("ProviderView")
+    }
+}
+
+struct WrappedProviderListView: View {
+    let items: [Item]
+    let provider: any ItemViewProviding
+    init(items: [Item], provider: any ItemViewProviding) {
+        self.items = items
+        self.provider = provider
+    }
+    var body: some View {
+        let _ = print("List Evaluated")
+        List(items) { item in
+            provider.wrappedAnyView(for: item)
         }
         .listStyle(.plain)
         .navigationTitle("ProviderView")
@@ -37,10 +55,34 @@ struct ProviderListView: View {
 
 struct ItemProvider: ItemViewProviding {
     func view(for item: Item) -> AnyView {
-        AnyView(ItemView(item: item))
+        ItemView(item: item).asAnyView
+    }
+    func wrappedAnyView(for item: Item) -> WrappedAnyView {
+        WrappedAnyView { ItemView(item: item) }
     }
 }
 
+struct WrappedAnyView: View {
+    let wrapped: AnyView
+    init<Content:View>(_ wrapped: Content) {
+        self.wrapped = AnyView(wrapped)
+    }
+    init<Content:View>(@ViewBuilder _ wrapped: () -> Content) {
+        self.wrapped = AnyView(wrapped())
+    }
+    var body: some View {
+        VStack { wrapped }
+    }
+}
+
+extension View {
+    var asAnyView: AnyView {
+        AnyView(self)
+    }
+    var asWrappedAnyView: WrappedAnyView {
+        WrappedAnyView(self)
+    }
+}
 
 //protocol AssociatedViewProviding {
 //    associatedtype Content: View
